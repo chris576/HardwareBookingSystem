@@ -10,10 +10,17 @@ RUN apt-get update && apt-get install -y \
     pdo_pgsql \
     intl
 
-# Setze das Arbeitsverzeichnis
-WORKDIR /var/www/html
+# Installieren Sie Node.js und npm
+RUN curl -sL https://deb.nodesource.com/setup_14.x | bash -
 
-# Kopiere die Dateien der Symfony-Anwendung in den Container
+RUN apt-get install -y nodejs npm
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm install
+
 COPY . .
 
 # Installiere Composer
@@ -23,7 +30,7 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 RUN composer install --no-scripts --no-autoloader
 
 # Setze die Dateiberechtigungen
-RUN chown -R www-data:www-data /var/www/html/var
+RUN chown -R www-data:www-data /app/var
 
 # Exponiere den Container-Port
 EXPOSE 9000

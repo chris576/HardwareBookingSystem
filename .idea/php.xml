@@ -136,6 +136,7 @@
       <path value="$PROJECT_DIR$/app/vendor/egulias/email-validator" />
       <path value="$PROJECT_DIR$/app/vendor/phar-io/version" />
       <path value="$PROJECT_DIR$/app/vendor/phar-io/manifest" />
+      <path value="$PROJECT_DIR$/app/vendor/symfony/webpack-encore-bundle" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.1" />

@@ -10,16 +10,12 @@ RUN apt-get update && apt-get install -y \
     pdo_pgsql \
     intl
 
-# Installieren Sie Node.js und npm
 RUN curl -sL https://deb.nodesource.com/setup_14.x | bash -
 
 RUN apt-get install -y nodejs npm
+RUN npm install -g yarn
 
-WORKDIR /app
-
-COPY package*.json ./
-
-RUN npm install
+WORKDIR /var/www/html
 
 COPY . .
 
@@ -30,7 +26,11 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 RUN composer install --no-scripts --no-autoloader
 
 # Setze die Dateiberechtigungen
-RUN chown -R www-data:www-data /app/var
+RUN chown -R www-data:www-data /var/www/html/var
+
+RUN yarn add webpack-notifier@^1.15.0 --dev
+
+RUN yarn build
 
 # Exponiere den Container-Port
 EXPOSE 9000

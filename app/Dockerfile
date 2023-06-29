@@ -22,13 +22,19 @@ COPY . .
 # Installiere Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
+RUN curl -sS https://get.symfony.com/cli/installer | bash
+
+RUN mv /root/.symfony5/bin/symfony /usr/local/bin/symfony
+
 # Installiere die Composer-Abhängigkeiten
-RUN composer install --no-scripts --no-autoloader
+RUN composer install
 
 # Setze die Dateiberechtigungen
 RUN chown -R www-data:www-data /var/www/html/var
 
-RUN yarn add webpack-notifier@^1.15.0 --dev
+RUN symfony run yarn add webpack-notifier@^1.15.0 --dev
+
+RUN symfony run -d yarn encore dev
 
 RUN yarn build
 

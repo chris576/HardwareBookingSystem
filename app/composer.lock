@@ -5314,7 +5314,7 @@
         },
         {
             "name": "symfony/runtime",
-            "version": "v6.1.11",
+            "version": "v6.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/runtime.git",

@@ -3,7 +3,21 @@ services:
   php:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Docker/php/Dockerfile
+    volumes:
+       - shared:/var/www/html/
+    networks:
+      - app-network
+
+  assets:
+    build:
+      context: ./assets
+      dockerfile: ../Docker/assets/Dockerfile
+    volumes:
+      - shared:/var/www/html/assets/
+    depends_on:
+      php:
+        condition: service_started
     networks:
       - app-network
 
@@ -33,6 +47,7 @@ services:
 
 volumes:
   db-data:
+  shared:
 
 networks:
   app-network:

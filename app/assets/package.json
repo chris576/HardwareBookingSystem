@@ -9,9 +9,10 @@
     "@babel/plugin-syntax-jsx": "^7.22.5",
     "@babel/preset-react": "^7.22.5",
     "@symfony/webpack-encore": "^4.3.0",
-    "axios": "^1.4.0"
+    "axios": "^1.4.0",
+    "webpack": "^5.88.1"
   },
   "scripts": {
-    "build": "webpack"
+    "build" : "/var/www/html/assets/node_modules/webpack"
   }
 }

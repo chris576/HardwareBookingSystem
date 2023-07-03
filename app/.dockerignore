@@ -1,3 +1,4 @@
-Docker
 var
 vendor
+public/build
+public/bundle

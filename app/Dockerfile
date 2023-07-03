@@ -1,5 +1,6 @@
-# Basisimage
-FROM php:8.1-fpm
+# Erste Build-Stufe: Composer-Installation und PHP-Abhängigkeiten
+
+FROM php:8.1-fpm AS composer
 
 RUN apt-get update && apt-get install -y \
     curl \
@@ -30,6 +31,26 @@ RUN composer dump-autoload --optimize
 
 # Setze die Dateiberechtigungen
 RUN chown -R www-data:www-data ./var
+
+
+# Zweite Build-Stufe: Node.js-Installation und Yarn-Build
+
+FROM node:latest AS node
+
+WORKDIR /var/www/html/
+
+COPY --from=composer /var/www/html/ .
+
+RUN yarn encore dev
+
+
+# Finale Build-Stufe: PHP-FPM-Server und Container-Konfiguration
+
+FROM php:8.1-fpm
+
+WORKDIR /var/www/html/
+
+COPY --from=node /var/www/html/ .
 
 # Exponiere den Container-Port
 EXPOSE 9000

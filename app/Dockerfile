@@ -3,8 +3,6 @@
 FROM php:8.1-fpm AS composer
 
 RUN apt-get update && apt-get install -y \
-    curl \
-    git \
     unzip \
     libicu-dev \
     libonig-dev \
@@ -12,9 +10,9 @@ RUN apt-get update && apt-get install -y \
 
 # Installiere die PHP-Erweiterungen
 RUN docker-php-ext-install \
-    pdo_mysql \
     intl \
-    zip
+    zip \
+    pdo_mysql
 
 WORKDIR /var/www/html/
 
@@ -46,7 +44,7 @@ RUN yarn encore dev
 
 # Finale Build-Stufe: PHP-FPM-Server und Container-Konfiguration
 
-FROM php:8.1-fpm
+FROM composer
 
 WORKDIR /var/www/html/
 

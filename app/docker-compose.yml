@@ -1,13 +1,17 @@
 version: '3.8'
 services:
+
   php:
     build:
       context: .
       dockerfile: Dockerfile
     volumes:
       - shared:/var/www/html/public/build/
+      - ./migrations:/var/www/html/migrations
+    depends_on:
+      - db
     networks:
-      - app-network
+      - app-intern
 
   nginx:
     image: nginx:latest
@@ -18,27 +22,28 @@ services:
       - shared:/var/www/html/public/build/:ro
     depends_on:
       - php
+      - db
     networks:
-      - app-network
+      - app-intern
 
   db:
-    image: mysql:latest
-    environment:
-      MYSQL_DATABASE: db
-      MYSQL_USER: user
-      MYSQL_PASSWORD: password
-      MYSQL_ROOT_USER: root
-      MYSQL_ROOT_PASSWORD: root
+    image: mysql:8.0
     volumes:
       - db-data:/var/lib/mysql
     networks:
-      - app-network
+      - app-intern
+    environment:
+      - MYSQL_ROOT_USER=${MYSQL_ROOT_USER} 
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
 
 volumes:
   db-data:
   shared:
-    external: 
-      false
 
 networks:
-  app-network:
+  app-intern:
+    driver: bridge
+    external: true

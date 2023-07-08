@@ -28,13 +28,9 @@ class Hardware
     #[ORM\OneToMany(mappedBy: 'hardware', targetEntity: Booking::class, orphanRemoval: true)]
     private Collection $bookings;
 
-    #[ORM\ManyToMany(targetEntity: Usergroup::class, mappedBy: 'hardware')]
-    private Collection $usergroups;
-
     public function __construct()
     {
         $this->bookings = new ArrayCollection();
-        $this->usergroups = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -105,33 +101,6 @@ class Hardware
             }
         }
         
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Usergroup>
-     */
-    public function getUsergroups(): Collection
-    {
-        return $this->usergroups;
-    }
-
-    public function addUsergroup(Usergroup $usergroup): static
-    {
-        if (!$this->usergroups->contains($usergroup)) {
-            $this->usergroups->add($usergroup);
-            $usergroup->addHardware($this);
-        }
-
-        return $this;
-    }
-
-    public function removeUsergroup(Usergroup $usergroup): static
-    {
-        if ($this->usergroups->removeElement($usergroup)) {
-            $usergroup->removeHardware($this);
-        }
-
         return $this;
     }
 }

@@ -39,6 +39,8 @@ WORKDIR /var/www/html/
 
 COPY --from=composer /var/www/html/ .
 
+RUN yarn install
+
 RUN yarn encore dev
 
 

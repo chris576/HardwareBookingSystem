@@ -41,17 +41,17 @@ class BookingRepository extends ServiceEntityRepository
         }
     }
 
-    private function userIsAllowedToBook(User $user, Hardware $hardware) : bool {
-        $entityManager = $this->getEntityManager();
-        $query = $entityManager->createQuery(
-            'SELECT g FROM \Entity\UserGroup g WHERE :user IN g.userList AND :hardware IN g.hardware'
-        )
-        ->setParameters([ 
-            'user' => $user, 
-            'hardware' => $hardware
-         ]);
-         return sizeof($query->getArrayResult()) > 0;
-    }
+//    private function userIsAllowedToBook(User $user, Hardware $hardware) : bool {
+//        $entityManager = $this->getEntityManager();
+//      $query = $entityManager->createQuery(
+//            'SELECT g FROM \Entity\UserGroup g WHERE :user IN g.userList AND :hardware IN g.hardware'
+//        )
+//        ->setParameters([ 
+//            'user' => $user, 
+//            'hardware' => $hardware
+//         ]);
+//         return sizeof($query->getArrayResult()) > 0;
+//    }
 
     private function isBlocked(\DateTimeImmutable $startDate, \DateTimeImmutable $endDate, Hardware $hardware) : bool {
         $entityManger = $this->getEntityManager(); 
@@ -68,10 +68,9 @@ class BookingRepository extends ServiceEntityRepository
         return sizeof($result) > 0; 
     }
 
-    public function save(User $user, Hardware $hardware, \DateTimeImmutable $startDate, \DateTimeImmutable $endDate, bool $flush) : Booking|null {
-        if ($this->userIsAllowedToBook($user, $hardware) && !$this->isBlocked($startDate, $endDate, $hardware)) {
+    public function save(Hardware $hardware, \DateTimeImmutable $startDate, \DateTimeImmutable $endDate, bool $flush) : Booking|null {
+        if (!$this->isBlocked($startDate, $endDate, $hardware)) {
             $booking = new Booking();
-            $booking->setUser($user); 
             $booking->setHardware($hardware);
             $booking->setStartDate($startDate);
             $booking->setEndDate($endDate);

@@ -52,8 +52,5 @@ WORKDIR /var/www/html/
 
 COPY --from=node /var/www/html/ .
 
-# Exponiere den Container-Port
-EXPOSE 9000
-
 # Starte den PHP-FPM-Server
 CMD ["php-fpm"]

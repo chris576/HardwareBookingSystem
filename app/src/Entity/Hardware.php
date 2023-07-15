@@ -9,7 +9,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: HardwareRepository::class)]
-class Hardware
+class Hardware implements \Stringable
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -102,5 +102,9 @@ class Hardware
         }
         
         return $this;
+    }
+
+    public function __toString() : string {
+        return $this->name;
     }
 }

@@ -7,7 +7,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: BookingRepository::class)]
-class Booking
+class Booking implements \Stringable
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -67,5 +67,9 @@ class Booking
         $this->endDate = $endDate;
 
         return $this;
+    }
+
+    public function __toString() : string {
+        return strval($this->getId());
     }
 }

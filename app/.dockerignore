@@ -2,3 +2,5 @@ var
 vendor
 public/build
 public/bundle
+Makefile
+.gitignore

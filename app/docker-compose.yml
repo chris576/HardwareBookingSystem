@@ -6,10 +6,11 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - shared:/var/www/html/public/build/
+      - shared:/var/www/html/public
       - ./migrations:/var/www/html/migrations
     depends_on:
-      - db
+      db:
+        condition: service_started
     networks:
       - app-intern
 
@@ -19,7 +20,7 @@ services:
       - 80:80
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
-      - shared:/var/www/html/public/build/:ro
+      - shared:/var/www/html/public:ro
     depends_on:
       - php
       - db
@@ -27,11 +28,14 @@ services:
       - app-intern
 
   db:
+    container_name: app_db
     image: mysql:8.0
     volumes:
       - db-data:/var/lib/mysql
     networks:
       - app-intern
+    ports:
+      - '3306:3306'
     environment:
       - MYSQL_ROOT_USER=${MYSQL_ROOT_USER} 
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}

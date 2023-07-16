@@ -51,6 +51,6 @@ FROM composer
 WORKDIR /var/www/html/
 
 COPY --from=node /var/www/html/ .
-
+ 
 # Starte den PHP-FPM-Server
 CMD ["php-fpm"]

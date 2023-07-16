@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - shared:/var/www/html/public/build/
+      - shared:/var/www/html/public
       - ./migrations:/var/www/html/migrations
     depends_on:
       db:
@@ -20,7 +20,7 @@ services:
       - 80:80
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
-      - shared:/var/www/html/public/build/:ro
+      - shared:/var/www/html/public:ro
     depends_on:
       - php
       - db

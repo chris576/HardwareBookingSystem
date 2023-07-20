@@ -79,18 +79,4 @@ class BookingRepository extends ServiceEntityRepository
         }
         return null;
     }
-
-    public function getReserved(\DateTimeImmutable $startDate, \DateTimeImmutable $endDate, Hardware $hardwareId): array {
-        $entityManager = $this->getEntityManager(); 
-        $query = $entityManager->createQuery(
-            'SELECT b FROM \Entity\Booking b WHERE b.startDate >= :startDate AND b.endDate <= :endDate AND b.hardware.id == :hardwareId'
-        )
-        ->setParameters([
-            'startDate' => $startDate, 
-            'endDate' => $endDate, 
-            'hardwareId' => $hardwareId
-        ]);
-
-        return $query->getArrayResult(); 
-    }
 }

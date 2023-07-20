@@ -5,7 +5,7 @@ namespace App\Controller\Admin;
 use App\Entity\Booking;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 
 class BookingCrudController extends AbstractCrudController
 {
@@ -17,8 +17,8 @@ class BookingCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         return [
-            DateField::new('startDate'),
-            DateField::new('endDate'),
+            DateTimeField::new('startDate'),
+            DateTimeField::new('endDate'),
             AssociationField::new('hardware')
         ];
     }

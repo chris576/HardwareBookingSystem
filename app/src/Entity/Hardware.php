@@ -25,19 +25,19 @@ class Hardware implements \Stringable
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['conference:list', 'conference:item'])]
+    #[Groups(['hardware:list', 'hardware:item'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['conference:list', 'conference:item'])]
+    #[Groups(['hardware:list', 'hardware:item'])]
     private ?string $name = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    #[Groups(['conference:list', 'conference:item'])]
+    #[Groups(['hardware:list', 'hardware:item'])]
     private ?string $description = null;
 
     #[ORM\Column(length: 18)]
-    #[Groups(['conference:list', 'conference:item'])]
+    #[Groups(['hardware:list', 'hardware:item'])]
     private ?string $ipV4 = null;
 
     #[ORM\OneToMany(mappedBy: 'hardware', targetEntity: Booking::class, orphanRemoval: true)]

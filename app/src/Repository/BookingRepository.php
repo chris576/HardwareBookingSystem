@@ -3,8 +3,6 @@
 namespace App\Repository;
 
 use App\Entity\Booking;
-use App\Entity\Hardware;
-use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -53,30 +51,15 @@ class BookingRepository extends ServiceEntityRepository
 //         return sizeof($query->getArrayResult()) > 0;
 //    }
 
-    private function isBlocked(\DateTimeImmutable $startDate, \DateTimeImmutable $endDate, Hardware $hardware) : bool {
-        $entityManger = $this->getEntityManager(); 
-        $result = $entityManger->createQuery(
-            'SELECT b FROM \Entity\Booking b WHERE (:startDate >= b.startDate AND b.startDate < :endDate AND b.hardware == :hardware) 
-            OR (:endDate > b.StartDate AND :endDate < b.endDate AND b.hardware == :hardware)'
-        )
-        ->setParameters([
-            'startDate' => $startDate,
-            'endDate' => $endDate,
-            'hardware' => $hardware
-        ])
-        ->getArrayResult();
-        return sizeof($result) > 0; 
-    }
+    public function findReservedTimeSpans(int $hardwareId, \DateTime $date) : array {
+        $connection = $this->getEntityManager()->getConnection();
 
-    public function save(Hardware $hardware, \DateTimeImmutable $startDate, \DateTimeImmutable $endDate, bool $flush) : Booking|null {
-        if (!$this->isBlocked($startDate, $endDate, $hardware)) {
-            $booking = new Booking();
-            $booking->setHardware($hardware);
-            $booking->setStartDate($startDate);
-            $booking->setEndDate($endDate);
-            $this->saveToDb($booking, $flush);
-            return $booking;
-        }
-        return null;
+        $sql = '
+            SELECT b.start_date FROM booking as b
+            WHERE b.hardware_id = :hardwareId AND Date(b.start_date) = :date
+        ';
+
+        $resultSet = $connection->executeQuery($sql, [ "hardwareId" => $hardwareId, "date" => $date->format('YYYY-MM-DD') ]);
+        return $resultSet->fetchAllNumeric();
     }
 }

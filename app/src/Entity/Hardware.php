@@ -7,22 +7,37 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: HardwareRepository::class)]
+#[ApiResource(
+        operations: [
+            new Get(normalizationContext: ['groups' => 'hardware:item']),
+            new GetCollection(normalizationContext: ['groups' => 'hardware:list'])
+       ],
+        paginationEnabled: false,
+)]
 class Hardware implements \Stringable
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['hardware:list', 'hardware:item'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['hardware:list', 'hardware:item'])]
     private ?string $name = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Groups(['hardware:list', 'hardware:item'])]
     private ?string $description = null;
 
     #[ORM\Column(length: 18)]
+    #[Groups(['hardware:list', 'hardware:item'])]
     private ?string $ipV4 = null;
 
     #[ORM\OneToMany(mappedBy: 'hardware', targetEntity: Booking::class, orphanRemoval: true)]

@@ -1,0 +1,12 @@
+{% extends 'base.html.twig' %}
+{% block javascripts %}
+    {{ parent() }}
+    {{ encore_entry_script_tags('booking_page') }}
+{% endblock %}
+{% block stylesheets %}
+    {{ parent() }}
+    {{ encore_entry_link_tags('booking_page') }}
+{% endblock %}
+{% block body %}
+    <div id="root"></div>
+{% endblock %}

@@ -30,7 +30,6 @@ RUN composer dump-autoload --optimize
 # Setze die Dateiberechtigungen
 RUN chown -R www-data:www-data ./var
 
-
 # Zweite Build-Stufe: Node.js-Installation und Yarn-Build
 
 FROM node:latest AS node

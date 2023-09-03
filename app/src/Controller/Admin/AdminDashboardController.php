@@ -49,5 +49,7 @@ class AdminDashboardController extends AbstractDashboardController
         ->setController(BookingCrudController::class);
         yield MenuItem::linkToCrud('Hardware', 'fas fa-hardware', Hardware::class)
         ->setController(HardwareCrudController::class);
+        yield MenuItem::linkToCrud('User', 'fa fas-user', User::class)
+        ->setController(UserCrudController::class);
     }
 }

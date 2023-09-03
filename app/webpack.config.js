@@ -13,7 +13,6 @@ Encore
     .setPublicPath('/build')
     // only needed for CDN's or subdirectory deploy
     //.setManifestKeyPrefix('build/')
-    .enableReactPreset()
     /*
      * ENTRY CONFIG
      *
@@ -22,7 +21,7 @@ Encore
      */
     .enableTypeScriptLoader()
     .enableForkedTypeScriptTypesChecking()
-    .addEntry('booking_page', './assets/pages/BookingPage.tsx')
+    .addEntry('booking_page', './assets/app.ts')
     .addStyleEntry('app_css', './assets/styles/app.css')
     // enables the Symfony UX Stimulus bridge (used in assets/bootstrap.js)
     .enableStimulusBridge('./assets/controllers.json')

@@ -1,0 +1,41 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Register
+{% endblock %}
+
+{% block body %}
+	<h1>Register</h1>
+	{{ form_errors(registrationForm) }}
+	{{ form_start(registrationForm) }}
+	<div class="form-outline mb-4">
+		{{ form_row(registrationForm.email, {
+						attr: {
+							'class': 'form-control'
+						}
+					}) }}
+	</div>
+	<div class="form-outline mb-4">
+		{{ form_row(registrationForm.plainPassword, {
+							label: 'Password',
+							attr: {
+								'class': 'form-control'
+							} 
+						}) 
+					}}
+	</div>
+	<!-- Checkbox -->
+	<div class="form-check d-flex justify-content-center mb-4">
+		{{ form_row(registrationForm.agreeTerms) }}
+		<label class="form-check-label" for="registerCheck">
+			I have read and agree to the terms
+		</label>
+	</div>
+	<!-- Submit button -->
+	{{ form_row(registrationForm.submit, {
+					attr: {
+						'class': 'btn btn-lg btn-primary'
+					}
+				})}}
+	{{ form_end(registrationForm) }}
+
+{% endblock %}

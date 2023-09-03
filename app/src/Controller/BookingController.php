@@ -3,9 +3,9 @@
 namespace App\Controller;
 
 use App\Entity\Booking;
+use App\Form\BookingType;
 use App\Repository\BookingRepository;
 use App\Repository\HardwareRepository;
-use DateTime;
 use DateTimeImmutable;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -25,41 +25,29 @@ class BookingController extends AbstractController
         $this->hardwareRepository = $hardwareRepository;
     }
 
-    #[Route('/post', name: 'post')]
-    public function postBooking(Request $request): Response
+    #[Route('/create', name: 'create')]
+    public function createBooking(Request $request): Response
     {
-        $hardwareId = $request->request->get('hardwareId');
-        $start = $request->request->get('start');
-        $end = $request->request->get('end');
-
-        if ($hardwareId == null || $start == null || $end == null) {
-            return new Response('', Response::HTTP_NOT_FOUND);
-        }
-
-        $hardware = $this->hardwareRepository->find($hardwareId);
-
-        if ($hardware == null) {
-            return new Response('', Response::HTTP_NOT_FOUND);
-        }
         $newBooking = new Booking();
-        $newBooking->setHardware($hardware);
-        $newBooking->setStartDate(new DateTimeImmutable($start));
-        $newBooking->setEndDate(new DateTimeImmutable($end));
-        $this->bookingRepository->persist($newBooking, true);
-        return new Response('', Response::HTTP_OK);
-    }
+        $bookingForm = $this->createForm(BookingType::class, $newBooking);
+        $bookingForm->handleRequest($request);
 
-    #[Route('/reserved', name: 'blocked_time_spans')]
-    public function getReservedTimeSpans(Request $request): Response
-    {
-        $hardwareId = $request->get("hardwareId");
-        $date = $request->get('date');
-
-        if ($hardwareId == null || $date == null) {
-            return new Response(Response::HTTP_BAD_REQUEST);
+        if ($bookingForm->isSubmitted() && $bookingForm->isValid()) {
+            $dateString = $bookingForm->get('date')->getData()->format('Y-m-d');
+            $startTimeString = $bookingForm->get('startTime')->getData()->format('H:i:s');
+            $endTimeString = $bookingForm->get('endTime')->getData()->format('H:i:s');
+            $newBooking->setStartDate(DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $dateString.' '.$startTimeString));
+            $newBooking->setEndDate(DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $dateString.' '.$endTimeString));   
+            $this->bookingRepository->persist($newBooking, true);
+            return $this->render('success_page.html.twig', [
+                'hardwareName' => $newBooking->getHardware()->getName(),
+                'hardwareIp' => $newBooking->getHardware()->getIpV4(),
+                'startDate' => $newBooking->getStartDate()->format('Y-m-d H:i:s'),
+                'endDate' => $newBooking->getEndDate()->format('Y-m-d H:i:s')
+            ]);
         }
-
-        $data = $this->bookingRepository->findReservedTimeSpans($hardwareId, $date);
-        return new JsonResponse($data);
+        return $this->render('bookingPage/booking_page.html.twig', [
+            'bookingForm' => $bookingForm->createView()
+        ]);
     }
 }

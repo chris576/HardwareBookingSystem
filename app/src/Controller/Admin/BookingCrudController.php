@@ -13,13 +13,4 @@ class BookingCrudController extends AbstractCrudController
     {
         return Booking::class;
     }
-
-    public function configureFields(string $pageName): iterable
-    {
-        return [
-            DateTimeField::new('startDate'),
-            DateTimeField::new('endDate'),
-            AssociationField::new('hardware')
-        ];
-    }
 }

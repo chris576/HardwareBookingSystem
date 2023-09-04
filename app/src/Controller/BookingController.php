@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\Security;
 
 #[Route('/api/booking', name: 'api_booking_')]
 class BookingController extends AbstractController
@@ -19,10 +20,13 @@ class BookingController extends AbstractController
     private BookingRepository $bookingRepository;
     private HardwareRepository $hardwareRepository;
 
-    public function __construct(BookingRepository $bookingRepository, HardwareRepository $hardwareRepository)
+    private Security $security;
+    
+    public function __construct(BookingRepository $bookingRepository, HardwareRepository $hardwareRepository, Security $security)
     {
         $this->bookingRepository = $bookingRepository;
         $this->hardwareRepository = $hardwareRepository;
+        $this->security = $security;
     }
 
     #[Route('/create', name: 'create')]
@@ -38,8 +42,10 @@ class BookingController extends AbstractController
             $endTimeString = $bookingForm->get('endTime')->getData()->format('H:i:s');
             $newBooking->setStartDate(DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $dateString.' '.$startTimeString));
             $newBooking->setEndDate(DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $dateString.' '.$endTimeString));   
+            $newBooking->setUser($this->security->getUser());
             $this->bookingRepository->persist($newBooking, true);
             return $this->render('success_page.html.twig', [
+                'user' => $newBooking->getUser(),
                 'hardwareName' => $newBooking->getHardware()->getName(),
                 'hardwareIp' => $newBooking->getHardware()->getIpV4(),
                 'startDate' => $newBooking->getStartDate()->format('Y-m-d H:i:s'),

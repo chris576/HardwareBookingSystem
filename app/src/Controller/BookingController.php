@@ -5,10 +5,8 @@ namespace App\Controller;
 use App\Entity\Booking;
 use App\Form\BookingType;
 use App\Repository\BookingRepository;
-use App\Repository\HardwareRepository;
 use DateTimeImmutable;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -18,14 +16,10 @@ use Symfony\Component\Security\Core\Security;
 class BookingController extends AbstractController
 {
     private BookingRepository $bookingRepository;
-    private HardwareRepository $hardwareRepository;
-
     private Security $security;
-    
-    public function __construct(BookingRepository $bookingRepository, HardwareRepository $hardwareRepository, Security $security)
+    public function __construct(BookingRepository $bookingRepository, Security $security)
     {
         $this->bookingRepository = $bookingRepository;
-        $this->hardwareRepository = $hardwareRepository;
         $this->security = $security;
     }
 
@@ -37,13 +31,25 @@ class BookingController extends AbstractController
         $bookingForm->handleRequest($request);
 
         if ($bookingForm->isSubmitted() && $bookingForm->isValid()) {
-            $dateString = $bookingForm->get('date')->getData()->format('Y-m-d');
-            $startTimeString = $bookingForm->get('startTime')->getData()->format('H:i:s');
-            $endTimeString = $bookingForm->get('endTime')->getData()->format('H:i:s');
-            $newBooking->setStartDate(DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $dateString.' '.$startTimeString));
-            $newBooking->setEndDate(DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $dateString.' '.$endTimeString));   
+            $startDateTime = $bookingForm->get('startDateTime')->getData();
+            
+            $endDateTimeWith = function (int $length) use ($startDateTime): \DateTimeInterface {
+                $endDateTime = clone $startDateTime;
+                $endDateTime->modify('+'.$length.' hour');
+                return $endDateTime;
+            };
+
+            $endDateTime = $bookingForm->has('length')
+                // Remember: Modifying endTime is just allowed as ROLE_ADMIN => endTime is only set, if ROLE_ADMIN
+                ? $endDateTimeWith->call($this, $bookingForm->get('length')->getData())
+                // If ROLE_USER, endTime is not set, so its set by default to +1 hour.
+                : $endDateTimeWith->call($this, 1);
+
+            $newBooking->setStartDate(DateTimeImmutable::createFromMutable($startDateTime));
+            $newBooking->setEndDate(DateTimeImmutable::createFromMutable($endDateTime));
             $newBooking->setUser($this->security->getUser());
             $this->bookingRepository->persist($newBooking, true);
+
             return $this->render('success_page.html.twig', [
                 'user' => $newBooking->getUser(),
                 'hardwareName' => $newBooking->getHardware()->getName(),

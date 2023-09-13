@@ -1,6 +1,7 @@
 {% extends 'main.html.twig' %}
 
 {% block body %}
+	{{form_errors(bookingForm)}}
 	{{form_start(bookingForm) }}
 	<div class="form-row">
 		<div class="col">
@@ -16,20 +17,9 @@
 		</div>
 		<div class="col">
 			<div class="input-group-prepend">
-				<span class="input-group-text" id="date_addon">Datum</span>
-			</div>
-			{{ form_widget(bookingForm.date, {
-                    attr: {
-                        'aria-describedby': 'date_addon',
-						'class': 'form-control'
-                    }
-                }) }}
-		</div>
-		<div class="col">
-			<div class="input-group-prepend">
 				<span class="input-group-text" id="start_addon">Startzeit</span>
 			</div>
-			{{ form_widget(bookingForm.startTime, {
+			{{ form_widget(bookingForm.startDateTime, {
                     attr: {
                         'aria-describedby': 'start_addon',
 						'class': 'form-control'
@@ -37,15 +27,19 @@
                 }) }}
 		</div>
 		<div class="col">
+			{% if bookingForm.length is defined %}
 			<div class="input-group-prepend">
-				<span class="input-group-text" id="end_addon">Endzeit</span>
+				<span class="input-group-text" id="end_addon">Stunden</span>
 			</div>
-			{{ form_widget(bookingForm.endTime, {
-                    attr: {
-                        'aria-describedby': 'end_addon',
-						'class': 'form-control'
-                    }
-                }) }}
+			{{ form_widget(bookingForm.length, {
+				attr: {
+					'aria-describedby': 'end_addon',
+					'class': 'form-control'
+				}
+			}) }}
+			{% else %}
+			Eine Stunde wird gebucht.
+			{% endif %}
 		</div>
 		<div class="col">
 			{{ form_widget(bookingForm.submit, {

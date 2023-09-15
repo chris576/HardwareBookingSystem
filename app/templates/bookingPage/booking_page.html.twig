@@ -4,7 +4,7 @@
 {% endblock %}
 {% block body %}
 	<div class="form-row">
-		<form action='/create' method='get' id="booking_form">
+		<form id="booking_form">
 			<div class="col">
 				<label for="hardware">Hardware</label>
 				<select name="hardware" id="hardware">
@@ -13,6 +13,7 @@
 					{% endfor %}
 				</select>
 			</div>
+			
 			<div class="col">
 				<label for="date">Buchungsdatum</label>
 				<input type="date" id="date" name="date" class="form-control"/>

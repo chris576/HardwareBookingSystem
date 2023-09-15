@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Booking;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Query\ResultSetMapping;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -39,31 +40,16 @@ class BookingRepository extends ServiceEntityRepository
         }
     }
 
-    public function getBookable(array $dateTimeRange, int $hardwareId, int $bookingLength = 1): array
+    public function getBookable(\DateTime $bookingDate, int $hardwareId, int $bookingLength = 1): array
     {
-        return $this->getEntityManager()->createQuery(
-            /** TODO: Temporäre Tabelle aus Buchbaren und eine aus nicht buchbare Zeiten. Dann Kreuzprodukt B * B * NB, mit Prüfung ob die Differenz gleich 1 ist, bzw. nicht innerhalb NB */
-            /** UNTEN: Tabelle an buchbaren Zeiten. */
-            'SELECT r, r2 FROM r FROM :dateTimeRange as r, :dateTimeRange as r2
-                JOIN \Entity\Booking as b ON
-                    /** Nur diejenigen Buchungen für die gewünschte Hardware dürfen betrachtet werden. */
-                    b.hardware = :hardwareId
-                    /** Alle Zeiten die zwischen start und ende liegen, also nicht buchbar sind, werden ignoriert */ 
-                    AND (r not between b.startDate AND b.endDate OR r2 not between b.startDate AND b.endDate)
-                    /** Alle Zeiten, in denen das Start oder Enddatum kleiner oder größer ist als das minimum/maximum von r, werden ignoriert. */
-                    AND ( b.startDate between MIN(r) AND MAX(r) OR b.endDate between MIN(r) AND MAX(r) )
-                /** Alle Zeiten, wo die Differenz von r1 und r2 der Buchungsdauer in Stunden ist.  */
-                WHERE TIMESTAMPDIFF(HOUR, r, r2) IS :bookingLength
-                /** R und R2 dürfen Zeiten, in denen die Buchung schon belegt ist, nicht überbuchen. */
-                    AND ( b.startDate NOT BETWEEN r AND r2 OR b.endDate NOT BETWEEN r AND r2 )
-            '
-        )
-            ->setParameters([
-                'dateTimeRange' => $dateTimeRange,
-                'bookingLength' => $bookingLength,
-                'hardwareId' => $hardwareId
-            ])
-            ->getArrayResult();
+        $sql = file_get_contents(__DIR__ . '../sql/GetBookableQuery.sql');
+        $query = $this->getEntityManager()->createNativeQuery($sql, new ResultSetMapping());
+        $query->setParameters([
+            'hardwareId' => $hardwareId,
+            'booking_date' => $bookingDate,
+            'bookingLength' => $bookingLength
+        ]);
+        return $query->getArrayResult();
     }
 
     //    private function userIsAllowedToBook(User $user, Hardware $hardware) : bool {

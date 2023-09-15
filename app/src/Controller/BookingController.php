@@ -47,9 +47,7 @@ class BookingController extends AbstractController
         }
         $bookables = $request->query->has('hardware') && $request->query->has('date')
             ? $this->bookingRepository->getBookable(
-                $this->generateDateTimeInterval(
-                    DateTime::createFromFormat('Y-m-d H:i:s', $request->query->get('date'))
-                ),
+                DateTime::createFromFormat("YYYY-MM-DD", $request->query->get('date')),
                 $request->query->get('hardware'),
                 $request->query->has('booking_length') ? $request->query->get('booking_length') : 1
             )
@@ -59,16 +57,5 @@ class BookingController extends AbstractController
             'hardwareList' => $this->hardwareRepository->findAll(),
             'isAdmin' => $this->isGranted('ROLE_ADMIN')
         ]);
-    }
-
-    private function generateDateTimeInterval(DateTime $dateTime): array
-    {
-        $dateTimeRange = [];
-        for ($i = 0; $i <= 24; $i++) {
-            $dt = clone $dateTime;
-            $dt->setTime($i, 0, 0);
-            $dateTimeRange[] = $dt;
-        }
-        return $dateTimeRange;
     }
 }

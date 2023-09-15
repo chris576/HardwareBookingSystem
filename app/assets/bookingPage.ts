@@ -14,6 +14,7 @@ document.getElementById("booking_form").addEventListener("submit", function (eve
     })
 });
 
+
 const axiosGet = () => {
     axios({
         method: 'GET',

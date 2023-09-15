@@ -4,11 +4,11 @@ namespace App\Form;
 
 use App\Entity\Booking;
 use App\Entity\Hardware;
+use App\Repository\BookingRepository;
 use App\Repository\HardwareRepository;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
-use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -21,7 +21,7 @@ class BookingType extends AbstractType
     private HardwareRepository $hardwareRepository;
     private AuthorizationCheckerInterface $authorizationChecker;
 
-    public function __construct(HardwareRepository $hardwareRepository, AuthorizationCheckerInterface $authorizationChecker)
+    public function __construct(HardwareRepository $hardwareRepository, BookingRepository $bookingRepository, AuthorizationCheckerInterface $authorizationChecker)
     {
         $this->hardwareRepository = $hardwareRepository;
         $this->authorizationChecker = $authorizationChecker;
@@ -36,13 +36,11 @@ class BookingType extends AbstractType
                     return $value->getName();
                 },
             ])
-
             ->add('startDateTime', DateTimeType::class, [
                 'mapped' => false,
                 'with_minutes' => false,
                 'label' => 'Startzeit'
             ]);
-
         if ($this->authorizationChecker->isGranted('ROLE_ADMIN')) {
             $builder->add('length', NumberType::class, [
                 'mapped' => false,
@@ -56,7 +54,6 @@ class BookingType extends AbstractType
                 ],
             ]);
         }
-
         $builder->add('submit', SubmitType::class);
     }
 

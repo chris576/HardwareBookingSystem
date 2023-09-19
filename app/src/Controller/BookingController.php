@@ -8,6 +8,7 @@ use App\Repository\HardwareRepository;
 use DateTime;
 use DateTimeImmutable;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -45,15 +46,15 @@ class BookingController extends AbstractController
                 'endDate' => $newBooking->getEndDate()->format('Y-m-d H:i:s')
             ]);
         }
-        $bookables = $request->query->has('hardware') && $request->query->has('date')
-            ? $this->bookingRepository->getBookable(
-                DateTime::createFromFormat("YYYY-MM-DD", $request->query->get('date')),
-                $request->query->get('hardware'),
-                $request->query->has('booking_length') ? $request->query->get('booking_length') : 1
-            )
-            : null;
+        if ($request->isMethod('GET') && $request->query->has('date') && $request->query->has('hardware')) {
+            $bookables = $this->bookingRepository->getBookable(
+                    DateTime::createFromFormat("YYYY-MM-DD", $request->query->get('date')),
+                    $request->query->get('hardware'),
+                    $request->query->has('booking_length') ? $request->query->get('booking_length') : 1
+            );
+            return new JsonResponse(json_encode($bookables));
+        }
         return $this->render('bookingPage/booking_page.html.twig', [
-            'bookables' => $bookables,
             'hardwareList' => $this->hardwareRepository->findAll(),
             'isAdmin' => $this->isGranted('ROLE_ADMIN')
         ]);

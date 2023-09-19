@@ -1,6 +1,6 @@
 {% extends 'main.html.twig' %}
-{% block javascripts %}
-	{{ encore_entry_link_tags('booking_page') }}
+{% block javascripts_body %}
+	{{ encore_entry_script_tags('booking_page') }}
 {% endblock %}
 {% block body %}
 	<div class="form-row">
@@ -13,7 +13,7 @@
 					{% endfor %}
 				</select>
 			</div>
-			
+
 			<div class="col">
 				<label for="date">Buchungsdatum</label>
 				<input type="date" id="date" name="date" class="form-control"/>
@@ -26,21 +26,9 @@
 					Eine Stunde wird gebucht.
 				{% endif %}
 			</div>
-			<select name="bookables" id="bookables">
-				{% if bookables is not null %}
-					{% for bookables in bookables %}
-						<option value='{ start: {{bookable[0]}}, end: {{bookable[1]}} }'>
-							{{bookable[0]}}
-						</option>
-					{% endfor %}
-				{% endif %}
-			</select>
+			<ul id="bookables" class="list-group"></ul>
 			<div class="col">
-				{% if bookables is not null %}
-					<input type="submit" value="Buchen" class="btn btn-primary">
-				{% else %}
-					<input type="submit" value="Buchen" class="btn btn-primary" disabled="true">
-				{% endif %}
+				<input id="submit" type="submit" value="Buchen" class="btn btn-primary" disabled="true">
 			</div>
 		</form>
 	</div>

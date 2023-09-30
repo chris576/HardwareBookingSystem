@@ -40,16 +40,26 @@ class BookingRepository extends ServiceEntityRepository
         }
     }
 
-    public function getBookable(\DateTime $bookingDate, int $hardwareId, int $bookingLength = 1): array
+    public function getBookable(\DateTime $bookingDate, int $hardwareId, int $bookingLength = 1): mixed
     {
-        $sql = file_get_contents(__DIR__ . '../sql/GetBookableQuery.sql');
-        $query = $this->getEntityManager()->createNativeQuery($sql, new ResultSetMapping());
-        $query->setParameters([
+        $query = ($this->getEntityManager()->getConnection()->createQueryBuilder()
+            ->select('COUNT(*)')
+            ->from('booking')
+            ->where('DATE(:bookingDate) = DATE(start_date)')
+            ->andWhere(':hardwareId = hardware_id')
+            ->setParameters([
+                'hardwareId' => $hardwareId,
+                'bookingDate' => $bookingDate->format('Y-m-d H:i:s')
+            ])
+            ->fetchOne() > 0)
+            ? 'CALL calculateBookables(:bookingDate, :hardwareId, :bookingLength);'
+            : 'CALL calculateTimeslots(:bookingDate, :hardwareId, :bookingLength);';
+        $resultSet = $this->getEntityManager()->getConnection()->executeQuery($query, [
             'hardwareId' => $hardwareId,
-            'booking_date' => $bookingDate,
+            'bookingDate' => $bookingDate->format('Y-m-d H:i:s'),
             'bookingLength' => $bookingLength
         ]);
-        return $query->getArrayResult();
+        return $resultSet->fetchAllAssociative();
     }
 
     //    private function userIsAllowedToBook(User $user, Hardware $hardware) : bool {

@@ -8,6 +8,7 @@ services:
     volumes:
       - shared:/var/www/html/public/:ro
       - ./migrations:/var/www/html/migrations
+      - ./sql:/var/www/html/sql
     depends_on:
       db:
         condition: service_started
@@ -37,7 +38,7 @@ services:
     ports:
       - '3306:3306'
     environment:
-      - MYSQL_ROOT_USER=${MYSQL_ROOT_USER} 
+      - MYSQL_ROOT_USER=${MYSQL_ROOT_USER}
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
       - MYSQL_USER=${MYSQL_USER}
@@ -46,6 +47,7 @@ services:
 volumes:
   db-data:
   shared:
+
 
 networks:
   app-intern:

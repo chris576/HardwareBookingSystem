@@ -27,9 +27,74 @@ final class Version20230904083242 extends AbstractMigration
         $this->addSql('ALTER TABLE booking ADD CONSTRAINT FK_E00CEDDEA76ED395 FOREIGN KEY (user_id) REFERENCES user (id)');
         $this->addSql('INSERT INTO user (email, roles, password) VALUES (:email, :roles, :password)', [
             'email' => 'root@root.com',
-            'roles' => json_encode(['ROLE_ADMIN']), 
-            'password' => password_hash('123', PASSWORD_BCRYPT), 
+            'roles' => json_encode(['ROLE_ADMIN']),
+            'password' => password_hash('123', PASSWORD_BCRYPT),
         ]);
+
+        $this->addSql('
+            CREATE PROCEDURE calculateTimeslots(IN bookingDate DATETIME, IN hardwareId INT, IN bookingLength INT)
+            BEGIN 
+            WITH RECURSIVE MyHours AS (
+                SELECT bookingDate AS myTimestamp
+                UNION ALL
+                SELECT DATE_ADD(myTimestamp, INTERVAL 1 HOUR)
+                FROM MyHours
+                WHERE DATE_ADD(myTimestamp, INTERVAL 1 HOUR) <= DATE_ADD(
+                        bookingDate,
+                        INTERVAL 24 - EXTRACT(
+                            HOUR
+                            FROM bookingDate
+                        ) HOUR
+                    )
+            )
+            SELECT DISTINCT h1.myTimestamp as startDateTime,
+                h2.myTimestamp as endDateTime
+            FROM MyHours AS h1,
+                MyHours as h2
+            WHERE 
+                TIMESTAMPDIFF(HOUR, h1.myTimestamp, h2.myTimestamp) = bookingLength;
+            END;
+        ');
+
+        $this->addSql('
+            CREATE PROCEDURE calculateBookables(IN bookingDate DATETIME, IN hardwareId INT, IN bookingLength INT)
+            BEGIN
+            WITH RECURSIVE MyHours AS (
+                SELECT bookingDate AS myTimestamp
+                UNION ALL
+                SELECT DATE_ADD(myTimestamp, INTERVAL 1 HOUR)
+                FROM MyHours
+                WHERE DATE_ADD(myTimestamp, INTERVAL 1 HOUR) <= DATE_ADD(
+                        bookingDate,
+                        INTERVAL 24 - EXTRACT(
+                            HOUR
+                            FROM bookingDate
+                        ) HOUR
+                    )
+            )
+            SELECT DISTINCT h1.myTimestamp as startDateTime,
+                h2.myTimestamp as endDateTime
+            FROM MyHours AS h1,
+                MyHours as h2,
+                booking
+            WHERE
+                /** Alle Zeiten, wo die Differenz von r1 und endTime der Buchungsdauer in Stunden ist.  */
+                TIMESTAMPDIFF(HOUR, h1.myTimestamp, h2.myTimestamp) = bookingLength
+                AND hardware_id = hardwareId
+                AND (
+                    Date(h1.myTimestamp) = Date(start_date)
+                    AND Date(h2.myTimestamp) = Date(end_date)
+                )
+                AND (
+                    h1.myTimestamp not between start_date AND end_date
+                    OR h2.myTimestamp not between start_date AND end_date
+                )
+                AND (
+                    start_date NOT BETWEEN h1.myTimestamp AND h2.myTimestamp
+                    OR end_date NOT BETWEEN h1.myTimestamp AND h2.myTimestamp
+                );
+            END;
+            ');
     }
 
     public function down(Schema $schema): void
@@ -40,5 +105,6 @@ final class Version20230904083242 extends AbstractMigration
         $this->addSql('DROP TABLE booking');
         $this->addSql('DROP TABLE hardware');
         $this->addSql('DROP TABLE user');
+        $this->addSql('DROP PROCEDURE get_bookable_slots');
     }
 }

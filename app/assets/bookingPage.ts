@@ -1,75 +1,79 @@
-import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios'
+import axios from 'axios'
 
-const hardwareSelektor = document.getElementById('hardware') as HTMLInputElement
+const hardwareSelektor = document.getElementById('hardware') as HTMLSelectElement
 const dateSelektor = document.getElementById('date') as HTMLInputElement
-const bookables = document.getElementById('bookables') as HTMLUListElement
+const lengthSelektor = document.getElementById('booking_length') as HTMLInputElement | null
 
-document.getElementById("booking_form").addEventListener("submit", function (event) {
-    event.preventDefault();
-    const dateTimeSelektor = document.getElementById('bookables') as HTMLInputElement
-    const dateRangeJSON = JSON.parse(dateTimeSelektor.value);
-    axios.post('/api/booking/create', {
-        hardware: hardwareSelektor.value,
-        startDateTime: dateRangeJSON.start,
-        endDateTime: dateRangeJSON.end
-    })
-});
+hardwareSelektor.addEventListener('input', function () {
+    if (hardwareSelektor.value) {
+        appendBookables()
+    }
+})
 
-const JSONtoLI = (json) => {
-    const element = document.createElement('li') as HTMLLIElement
-    element.value = json
-    element.textContent = json.start
-    element.classList.add('list-group-item')
-    element.addEventListener('click', (ev) => {
-        const activeItems = bookables.getElementsByClassName('active')
-        for (let i = 0; i < activeItems.length; i++) {
-            const item = activeItems.item(i)
-            item.classList.remove('active')
-        }
-        element.classList.add('active')
-    })
-    return element;
+dateSelektor.addEventListener('input', function () {
+    if (hardwareSelektor.value) {
+        appendBookables()
+    }
+})
+
+lengthSelektor?.addEventListener('input', function () {
+    if (hardwareSelektor.value) {
+        appendBookables()
+    }
+})
+
+const appendTimeSlots = () => {
+    const booking_length_element = document.getElementById('booking_length') as HTMLInputElement | null
+    const booking_length = booking_length_element ? parseInt(booking_length_element.value) : 1
+    const bookables_root = document.getElementById('bookables_root') as HTMLDivElement
+    bookables_root.replaceChildren()
+    for (let index = 0; index < 24; index+=booking_length) {
+
+    }
 }
 
-const getBookables = () => {
+const appendBookables = () => {
+    const booking_length = document.getElementById('booking_length') as HTMLInputElement | null
+    const params = booking_length ?
+        {
+            date: dateSelektor.value,
+            hardware: hardwareSelektor.value,
+            booking_length: booking_length ? booking_length.value : 1
+        }
+        : {
+            date: dateSelektor.value,
+            hardware: hardwareSelektor.value,
+        }
     axios({
         method: 'GET',
         url: '/api/booking/create',
-        params: {
-            date: dateSelektor.value,
-            hardware: hardwareSelektor.value
-        }
+        params
     }).then((response) => {
-        while (bookables.children.length > 0) {
-            const item = bookables.children.item(0)
-            bookables.removeChild(item);
-        }
+        const bookables_root = document.getElementById('bookables_root') as HTMLDivElement
+        bookables_root.replaceChildren()
         for (const [key, val] of Object.entries(response.data)) {
-            bookables.appendChild(JSONtoLI(val))
+            const bookable = document.createElement('input') as HTMLInputElement
+            bookable.type = "radio"
+            bookable.name = "bookable_select"
+            bookable.value = JSON.stringify(val)
+            bookable.textContent = new Date(JSON.parse(JSON.stringify(val)).startDateTime).getHours() + ' bis ' + new Date(JSON.parse(JSON.stringify(val)).endDateTime).getHours()
+            bookables_root.appendChild(bookable)
         }
+    }).catch((error) => {
     })
 }
 
-hardwareSelektor.addEventListener('input', (event) => {
-    const date = dateSelektor.value
-    if (date != null && hardwareSelektor.value != null) {
-        getBookables()
-        const submit = document.getElementById("submit") as HTMLInputElement
-        submit.disabled = false
-    } else {
-        const submit = document.getElementById("submit") as HTMLInputElement
-        submit.disabled = true
-    }
+document.getElementById("booking_form").addEventListener("submit", function (event) {
+    event.preventDefault()
+    postBooking()
 });
 
-dateSelektor.addEventListener('input', (event) => {
-    const hardware = hardwareSelektor.value
-    if (hardware != null && dateSelektor.value != null) {
-        getBookables()
-        const submit = document.getElementById("submit") as HTMLInputElement
-        submit.disabled = false
-    } else {
-        const submit = document.getElementById("submit") as HTMLInputElement
-        submit.disabled = true
-    }
-});
+const postBooking = () => {
+    const hardwareElement = document.getElementById('hardware') as HTMLSelectElement
+    const bookingElement = document.getElementById('bookables') as HTMLSelectElement
+    axios.post('/api/booking/create', {
+        startDateTime: JSON.parse(bookingElement.value).startDateTime,
+        endDateTime: JSON.parse(bookingElement.value).endDateTime,
+        hardware: parseInt(hardwareElement.value)
+    })
+}

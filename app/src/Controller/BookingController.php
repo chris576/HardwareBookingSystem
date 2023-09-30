@@ -27,33 +27,74 @@ class BookingController extends AbstractController
         $this->security = $security;
     }
 
+    #[Route('/success', name: 'success')]
+    public function bookingSuccessPage(Request $request): Response
+    {
+        $hardware = $this->hardwareRepository->find($request->query->get('hardware'));
+        return $this->render('success_page.html.twig', [
+            'user' => $request->query->get('user'),
+            'hardwareName' => $hardware->getName(),
+            'hardwareIp' => $hardware->getIpV4(),
+            'hasStartDateTime' => $request->query->get('hasStartDateTime'),
+            'hasEndDateTime' => $request->query->get('hasStartDateTime')
+        ]);
+    }
+
     #[Route('/create', name: 'create')]
-    public function createBooking(Request $request): Response
+    public function createBooking(Request $request): Response|JsonResponse
     {
         if ($request->isMethod('POST')) {
+            
+            $hasStartDateTime = $request->request->has('startDateTime');
+            $hasEndDateTime = $request->request->has('endDateTime');
+            $hasHardwareId = $request->request->has('hardware');
+
+            if (!$hasStartDateTime || !$hasEndDateTime || !$hasHardwareId) {
+                return new Response('Some parameter was missing.', Response::HTTP_BAD_REQUEST);
+            }
+
+            $hardware = $this->hardwareRepository->find($request->request->get('hardware'));
+
+            if ($hardware == null) {
+                return new Response('Hardware was not found.', Response::HTTP_BAD_REQUEST);
+            }
+
             $newBooking = new Booking();
-            $startDateTime = DateTime::createFromFormat('YYYY-MM-DD HH', $request->request->get('startDateTime'));
-            $endDateTime = DateTime::createFromFormat('YYYY-MM-DD HH', $request->request->get('endDateTime'));
+            $startDateTime = DateTime::createFromFormat('Y-m-d H:i:s', $request->request->get('startDateTime'));
+            $endDateTime = DateTime::createFromFormat('Y-m-d H:i:s', $request->request->get('endDateTime'));
             $newBooking->setStartDate(DateTimeImmutable::createFromMutable($startDateTime));
             $newBooking->setEndDate(DateTimeImmutable::createFromMutable($endDateTime));
             $newBooking->setUser($this->security->getUser());
+            $newBooking->setHardware($hardware);
             $this->bookingRepository->persist($newBooking, true);
-            return $this->render('success_page.html.twig', [
-                'user' => $newBooking->getUser(),
-                'hardwareName' => $newBooking->getHardware()->getName(),
-                'hardwareIp' => $newBooking->getHardware()->getIpV4(),
-                'startDate' => $newBooking->getStartDate()->format('Y-m-d H:i:s'),
-                'endDate' => $newBooking->getEndDate()->format('Y-m-d H:i:s')
+
+            return $this->redirectToRoute('api_booking_success', [
+                [
+                    'user' => $newBooking->getUser(),
+                    'hardwareName' => $newBooking->getHardware()->getName(),
+                    'hardwareIp' => $newBooking->getHardware()->getIpV4(),
+                    'hasStartDateTime' => $newBooking->getStartDate()->format('Y-m-d H:i:s'),
+                    'hasEndDateTime' => $newBooking->getEndDate()->format('Y-m-d H:i:s')
+                ]
             ]);
         }
+
         if ($request->isMethod('GET') && $request->query->has('date') && $request->query->has('hardware')) {
+            $hardware = $request->query->get('hardware');
+            if ($request->query->get('date') == date('Y-m-d')) {
+                $bookingDateTime = DateTime::createFromFormat('Y-m-d H:i:s', date('Y-m-d H:i:s'));
+                $bookingDateTime->setTime(intval($bookingDateTime->format('H')) + 1, 0, 0);
+            } else {
+                $bookingDateTime = DateTime::createFromFormat("Y-m-d H:i:s", $request->query->get('date').' 00:00:00');
+            }
             $bookables = $this->bookingRepository->getBookable(
-                    DateTime::createFromFormat("YYYY-MM-DD", $request->query->get('date')),
-                    $request->query->get('hardware'),
-                    $request->query->has('booking_length') ? $request->query->get('booking_length') : 1
+                $bookingDateTime,
+                $hardware,
+                ($request->query->has('booking_length') && $request->query->get('booking_length') != null) ? $request->query->get('booking_length') : 1
             );
-            return new JsonResponse(json_encode($bookables));
+            return new JsonResponse($bookables);
         }
+
         return $this->render('bookingPage/booking_page.html.twig', [
             'hardwareList' => $this->hardwareRepository->findAll(),
             'isAdmin' => $this->isGranted('ROLE_ADMIN')

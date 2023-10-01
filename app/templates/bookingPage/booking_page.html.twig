@@ -22,7 +22,9 @@
 			<input class="col-1" type="submit" value="Buchen" class="btn btn-primary col">
 		</div>
 		<div class="row" id="bookables_root">
-			{{ appendBookables() }}
+			<table id = "bookable_table" class="col-12"></table>
 		</div>
 	</form>
+	{{ appendTimeSlots() }}
+	{{ appendBookables() }}
 {% endblock %}

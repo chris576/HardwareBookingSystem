@@ -18,6 +18,7 @@ dateSelektor.addEventListener('input', function () {
 
 lengthSelektor?.addEventListener('input', function () {
     if (hardwareSelektor.value) {
+        appendTimeSlots()
         appendBookables()
     }
 })
@@ -25,10 +26,26 @@ lengthSelektor?.addEventListener('input', function () {
 const appendTimeSlots = () => {
     const booking_length_element = document.getElementById('booking_length') as HTMLInputElement | null
     const booking_length = booking_length_element ? parseInt(booking_length_element.value) : 1
-    const bookables_root = document.getElementById('bookables_root') as HTMLDivElement
-    bookables_root.replaceChildren()
-    for (let index = 0; index < 24; index+=booking_length) {
-
+    const bookables_table = document.getElementById('bookable_table') as HTMLTableElement
+    bookables_table.remove()
+    let row: HTMLTableRowElement
+    for (let index = 0; index < 24; index += booking_length) {
+        if (index % (booking_length * 4) === 0) {
+            row = bookables_table.insertRow()
+        }
+        const bookable = document.createElement('input') as HTMLInputElement
+        bookable.classList.add('bookable')
+        bookable.type = 'radio'
+        const ident = JSON.stringify({
+            startDateTime: new Date(dateSelektor.value + ' ' + index + ':00:00'),
+            endDateTime: new Date(dateSelektor.value + ' ' + index + booking_length + ':00:00')
+        })
+        bookable.value = ident
+        bookable.id = ident
+        bookable.textContent = index + ':00' + ' bis ' + index + bookable + ':00'
+        bookable.disabled = true
+        const cell = row.insertCell()
+        cell.appendChild(bookable)
     }
 }
 
@@ -49,15 +66,12 @@ const appendBookables = () => {
         url: '/api/booking/create',
         params
     }).then((response) => {
-        const bookables_root = document.getElementById('bookables_root') as HTMLDivElement
-        bookables_root.replaceChildren()
-        for (const [key, val] of Object.entries(response.data)) {
-            const bookable = document.createElement('input') as HTMLInputElement
-            bookable.type = "radio"
-            bookable.name = "bookable_select"
-            bookable.value = JSON.stringify(val)
-            bookable.textContent = new Date(JSON.parse(JSON.stringify(val)).startDateTime).getHours() + ' bis ' + new Date(JSON.parse(JSON.stringify(val)).endDateTime).getHours()
-            bookables_root.appendChild(bookable)
+        const bookables = document.getElementsByClassName('bookable') as HTMLCollectionOf<HTMLInputElement>
+        let index = 0
+        while (index < bookables.length) {
+            const bookable = bookables.item(index)
+            let b_slot = Object.entries(response.data).find(([key, val]) => { JSON.stringify(val) === bookable.value })
+            index++
         }
     }).catch((error) => {
     })

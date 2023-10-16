@@ -40,20 +40,25 @@ class BookingRepository extends ServiceEntityRepository
         }
     }
 
-    public function getBookable(\DateTime $bookingDate, int $hardwareId, int $bookingLength = 1): mixed
+    public function isBookable(\DateTime $startDateTime, \DateTime $endDateTime, int $hardwareId): bool
     {
-        $query = ($this->getEntityManager()->getConnection()->createQueryBuilder()
+        $query = $this->getEntityManager()->getConnection()->createQueryBuilder()
             ->select('COUNT(*)')
             ->from('booking')
-            ->where('DATE(:bookingDate) = DATE(start_date)')
-            ->andWhere(':hardwareId = hardware_id')
-            ->setParameters([
-                'hardwareId' => $hardwareId,
-                'bookingDate' => $bookingDate->format('Y-m-d H:i:s')
-            ])
-            ->fetchOne() > 0)
-            ? 'CALL calculateBookables(:bookingDate, :hardwareId, :bookingLength);'
-            : 'CALL calculateTimeslots(:bookingDate, :hardwareId, :bookingLength);';
+            ->where('DATE_ADD(:startDateTime, INTERVAL 1 SECOND) between start_date AND end_date')
+            ->orWhere('DATE_SUB(:endDateTime, INTERVAL 1 SECOND) between start_date AND end_date')
+            ->andWhere(':hardwareId = hardware_id');
+        $resultSet = $this->getEntityManager()->getConnection()->executeQuery($query, [
+            'hardwareId' => $hardwareId,
+            'startDateTime' => $startDateTime->format('Y-m-d H:i:s'),
+            'endDateTime' => $endDateTime->format('Y-m-d H:i:s')
+        ]);
+        return $resultSet->fetchOne() == 0;
+    }
+
+    public function getBookable(\DateTime $bookingDate, int $hardwareId, int $bookingLength = 1): mixed
+    {
+        $query = 'CALL calculateBookables(:bookingDate, :hardwareId, :bookingLength);';
         $resultSet = $this->getEntityManager()->getConnection()->executeQuery($query, [
             'hardwareId' => $hardwareId,
             'bookingDate' => $bookingDate->format('Y-m-d H:i:s'),

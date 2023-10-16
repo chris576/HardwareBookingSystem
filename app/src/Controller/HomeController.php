@@ -20,6 +20,6 @@ class HomeController extends AbstractController
         if (!$this->isGranted('ROLE_USER')) {
             return $this->render('landing_page.html.twig');
         }
-        return $this->redirect($this->urlGenerator->generate('api_booking_create'));
+        return $this->redirect($this->urlGenerator->generate('api_booking_read'));
     }
 }

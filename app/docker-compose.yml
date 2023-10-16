@@ -7,8 +7,7 @@ services:
       dockerfile: Dockerfile
     volumes:
       - shared:/var/www/html/public/:ro
-      - ./migrations:/var/www/html/migrations
-      - ./sql:/var/www/html/sql
+      - .:/var/www/html/
     depends_on:
       db:
         condition: service_started

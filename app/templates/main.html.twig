@@ -14,15 +14,11 @@
 	</head>
 	<body>
 		{% block javascripts_body %}{% endblock %}
-		{% for messages in app.session.flashBag.get('success') %}
-			{% for message in messages %}
-				<div class="alert alert-success">{{ message }}</div>
-			{% endfor %}
+		{% for message in app.flashes('success') %}
+			<div class="alert alert-success">{{ message }}</div>
 		{% endfor %}
-		{% for messages in app.session.flashBag.get('error') %}
-			{% for message in messages %}
-				<div class="alert alert-danger">{{ message }}</div>
-			{% endfor %}
+		{% for message in app.flashes('error') %}
+			<div class="alert alert-danger">{{ message }}</div>
 		{% endfor %}
 		<div class="container-fluid">
 			<nav class="navbar navbar-expand-lg navbar-light bg-light row">

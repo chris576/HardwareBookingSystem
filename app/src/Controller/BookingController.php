@@ -26,18 +26,6 @@ class BookingController extends AbstractController
         $this->security = $security;
     }
 
-    #[Route('/success', name: 'success')]
-    public function bookingSuccessPage(Request $request): Response
-    {
-        return $this->render('success_page.html.twig', [
-            'user' => $this->security->getUser(),
-            'hardwareName' => $request->get('hardwareName'),
-            'hardwareIp' => $request->get('hardwareIp'),
-            'startDateTime' => $request->get('startDateTime'),
-            'endDateTime' => $request->get('endDateTime')
-        ]);
-    }
-
     #[Route('/read', name: 'read', methods: 'GET')]
     public function readBookings(Request $request): Response
     {

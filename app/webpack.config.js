@@ -21,7 +21,8 @@ Encore
      */
     .enableTypeScriptLoader()
     .enableForkedTypeScriptTypesChecking()
-    .addEntry('booking_page', './assets/app.ts')
+    .addEntry('app', './assets/app.ts')
+    .addEntry('booking_page', './assets/bookingPage.ts')
     .addStyleEntry('app_css', './assets/styles/app.css')
     // enables the Symfony UX Stimulus bridge (used in assets/bootstrap.js)
     .enableStimulusBridge('./assets/controllers.json')

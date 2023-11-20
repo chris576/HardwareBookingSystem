@@ -11,6 +11,7 @@
 		{% block stylesheets %}
 			{{ encore_entry_script_tags('app_css') }}
 		{% endblock %}
+		{% block javascripts_head %}{% endblock %}
 	</head>
 	<body>
 		{% block javascripts_body %}{% endblock %}
@@ -38,7 +39,7 @@
 							<a class="nav-link" href="{{ path('app_logout') }}">Ausloggen</a>
 						</li>
 						<li class="nav-item">
-							<a class="nav-link" href="#">{{ app.user.email }}</a>
+							<a class="nav-link" href="{{ path('app_user_dashboard_index') }}">{{ app.user.email }}</a>
 						</li>
 					</ul>
 				</div>

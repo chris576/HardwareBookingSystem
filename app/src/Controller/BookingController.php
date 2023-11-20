@@ -42,7 +42,6 @@ class BookingController extends AbstractController
             $hardwareId,
             $booking_length
         );
-
         return $this->render('bookingPage/booking_page.html.twig', [
             'hardwareList' => $this->hardwareRepository->findAll(),
             'isAdmin' => $this->isGranted('ROLE_ADMIN'),
@@ -96,11 +95,22 @@ class BookingController extends AbstractController
         $newBooking->setHardware($hardware);
         $this->bookingRepository->persist($newBooking, true);
         $this->addFlash('success', 'Deine Buchung der Hardware "' . $hardware->getName() . '" war erfolgreich.');
-        
+
         return $this->redirectToRoute('api_booking_read', [
             'date' => $request->request->get('date'),
             'hardware' => $request->request->get('hardware'),
             'booking_length' => $request->request->get('booking_length')
         ]);
+    }
+
+    #[Route('/delete/{bId}', name: 'delete', methods: 'POST')]
+    public function deleteBooking(Request $request, int $bId): Response
+    {
+        $booking = $this->bookingRepository->find($bId);
+        if ($booking == null) {
+            return new Response(Response::HTTP_NOT_FOUND);
+        }
+        $this->bookingRepository->remove($booking, true);
+        return new Response(Response::HTTP_OK);
     }
 }

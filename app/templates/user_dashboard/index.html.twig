@@ -1,0 +1,34 @@
+{% extends 'main.html.twig' %}
+
+{% block title %}
+
+{% endblock %}
+
+{% block javascripts_head %}
+  {{ encore_entry_script_tags('user_dashboard') }}
+{% endblock %}
+
+{% block body %}
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">Hardware-Name</th>
+        <th scope="col">Startdatum</th>
+        <th scope="col">Enddatum</th>
+        <th scope="col"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for booking in bookings %}
+        <tr>
+          <td>{{ booking.hardware.name }}</td>
+          <td>{{ booking.startDate.format('Y-m-d H:i') }}</td>
+          <td>{{ booking.endDate.format('Y-m-d H:i') }}</td>
+          <td>
+            <button type="button" id="{{ booking.id }}" class="cancel-booking-btn btn btn-danger">Stornieren</button>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

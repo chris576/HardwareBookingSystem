@@ -7,7 +7,6 @@ services:
       dockerfile: Dockerfile
     volumes:
       - shared:/var/www/html/public/:ro
-      - .:/var/www/html/
     depends_on:
       db:
         condition: service_started
@@ -35,7 +34,7 @@ services:
     networks:
       - app-intern
     ports:
-      - '3306:3306'
+      - '3306'
     environment:
       - MYSQL_ROOT_USER=${MYSQL_ROOT_USER}
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
@@ -46,7 +45,6 @@ services:
 volumes:
   db-data:
   shared:
-
 
 networks:
   app-intern:

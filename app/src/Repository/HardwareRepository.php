@@ -39,7 +39,20 @@ class HardwareRepository extends ServiceEntityRepository
         }
     }
 
-//    /**
+    public function findByUserIdentifier($identifier): array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+        $sql = '
+            SELECT distinct h.id, h.name, h.ip_v4, h.description FROM hardware as h
+            JOIN role_hardware as rh ON rh.hardware_id = h.id
+            JOIN role_user as ru ON ru.role_id = rh.role_id
+            JOIN `user` as u ON u.email = :email AND ru.user_id = u.id
+        ';
+        $resultSet = $conn->executeQuery($sql, ['email' => $identifier]);
+        return $resultSet->fetchAllAssociative();
+    }
+
+    //    /**
 //     * @return Hardware[] Returns an array of Hardware objects
 //     */
 //    public function findByExampleField($value): array
@@ -54,7 +67,7 @@ class HardwareRepository extends ServiceEntityRepository
 //        ;
 //    }
 
-//    public function findOneBySomeField($value): ?Hardware
+    //    public function findOneBySomeField($value): ?Hardware
 //    {
 //        return $this->createQueryBuilder('h')
 //            ->andWhere('h.exampleField = :val')

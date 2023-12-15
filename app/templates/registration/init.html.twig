@@ -1,0 +1,14 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+  Registrierung
+{% endblock %}
+
+{% block body %}
+  <p>Bitte geben Sie für den Registrierungsprozess zunächst ihgre E-Mail an.</p>
+  <form method="POST" action="/register/init">
+    <label for="email">Deine E-Mail Adresse</label>
+    <input type="email" name="email" id="email" />
+    <input type="submit" value="Absenden" id="submit"/>
+  </form>
+{% endblock %}

@@ -2,8 +2,7 @@
 
 namespace App\Controller\Admin;
 
-use App\Entity\Booking;
-use App\Entity\Hardware;
+use App\Entity\{Booking, Hardware, User, Role};
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractDashboardController;
@@ -46,10 +45,12 @@ class AdminDashboardController extends AbstractDashboardController
     {
         yield MenuItem::linkToRoute('Booking Site', 'fa fa-home', 'app_home');
         yield MenuItem::linkToCrud('Bookings', 'fas fa-booking', Booking::class)
-        ->setController(BookingCrudController::class);
+            ->setController(BookingCrudController::class);
         yield MenuItem::linkToCrud('Hardware', 'fas fa-hardware', Hardware::class)
-        ->setController(HardwareCrudController::class);
+            ->setController(HardwareCrudController::class);
         yield MenuItem::linkToCrud('User', 'fa fas-user', User::class)
-        ->setController(UserCrudController::class);
+            ->setController(UserCrudController::class);
+        yield MenuItem::linkToCrud('Roles', 'fas fa-hardware', Role::class)
+            ->setController(RoleCrudController::class);
     }
 }

@@ -4,7 +4,8 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
-
+    auth.redis.dsn: '%env(REDIS_DSN)%'
+    mail.sender.default: '%env(SENDER_MAIL)%'
 services:
     # default configuration for services in *this* file
     _defaults:
@@ -22,3 +23,13 @@ services:
     App\EventListener\OnBookingDateChangeEventListener:
         tags:
             - { name: kernel.event_listener, event: form.post_set_data }
+    
+    App\Service\RedisContainer:
+        autowire: true
+        autoconfigure: true
+        arguments:
+            - '%env(REDIS_DSN)%'
+
+    App\Service\MailServiceContainer:
+        autowire: true
+        autoconfigure: true

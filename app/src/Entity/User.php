@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[UniqueEntity(fields: ['email'], message: 'There is already an account with this email')]
@@ -20,10 +21,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, \String
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true)]
+    #[Assert\Email]
     private ?string $email = null;
-
-    #[ORM\Column]
-    private array $roles = [];
 
     /**
      * @var string The hashed password
@@ -34,9 +33,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, \String
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Booking::class, orphanRemoval: true)]
     private Collection $bookings;
 
+    #[ORM\ManyToMany(targetEntity: Role::class, mappedBy: 'users')]
+    private Collection $userRoles;
+
     public function __construct()
     {
         $this->bookings = new ArrayCollection();
+        $this->userRoles = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -66,24 +69,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, \String
         return (string) $this->email;
     }
 
-    /**
-     * @see UserInterface
-     */
-    public function getRoles(): array
-    {
-        $roles = $this->roles;
-        // guarantee every user at least has ROLE_USER
-        $roles[] = 'ROLE_USER';
-
-        return array_unique($roles);
-    }
-
-    public function setRoles(array $roles): static
-    {
-        $this->roles = $roles;
-
-        return $this;
-    }
 
     /**
      * @see PasswordAuthenticatedUserInterface
@@ -139,6 +124,45 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, \String
             if ($booking->getUser() === $this) {
                 $booking->setUser(null);
             }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Role>
+     */
+    public function getRoles(): array
+    {
+        return $this->userRoles->map(
+            function (Role $role) {
+                return $role->getName();
+            })
+            ->toArray();
+    }
+
+    /**
+     * @return Collection<int, Role>
+     */
+    public function getUserRoles(): Collection
+    {
+        return $this->userRoles;
+    }
+
+    public function addUserRole(Role $userRole): static
+    {
+        if (!$this->userRoles->contains($userRole)) {
+            $this->userRoles->add($userRole);
+            $userRole->addUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUserRole(Role $userRole): static
+    {
+        if ($this->userRoles->removeElement($userRole)) {
+            $userRole->removeUser($this);
         }
 
         return $this;

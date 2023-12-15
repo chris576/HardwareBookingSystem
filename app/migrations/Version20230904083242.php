@@ -25,12 +25,6 @@ final class Version20230904083242 extends AbstractMigration
         $this->addSql('CREATE TABLE user (id INT AUTO_INCREMENT NOT NULL, email VARCHAR(180) NOT NULL, roles JSON NOT NULL, password VARCHAR(255) NOT NULL, UNIQUE INDEX UNIQ_8D93D649E7927C74 (email), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('ALTER TABLE booking ADD CONSTRAINT FK_E00CEDDEC9CC762B FOREIGN KEY (hardware_id) REFERENCES hardware (id)');
         $this->addSql('ALTER TABLE booking ADD CONSTRAINT FK_E00CEDDEA76ED395 FOREIGN KEY (user_id) REFERENCES user (id)');
-        $this->addSql('INSERT INTO user (email, roles, password) VALUES (:email, :roles, :password)', [
-            'email' => 'root@root.com',
-            'roles' => json_encode(['ROLE_ADMIN']),
-            'password' => password_hash('123', PASSWORD_BCRYPT),
-        ]);
-
         $this->addSql('
             CREATE PROCEDURE calculateBookables(IN bookingDate DATETIME, IN hardwareId INT, IN bookingLength INT)
             BEGIN

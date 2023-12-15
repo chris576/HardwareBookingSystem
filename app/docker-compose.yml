@@ -11,6 +11,8 @@ services:
     depends_on:
       db:
         condition: service_started
+      redis: 
+        condition: service_started
     networks:
       - app-intern
 
@@ -42,10 +44,19 @@ services:
       - MYSQL_DATABASE=${MYSQL_DATABASE}
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-
+  
+  redis:
+    container_name: user_verify_db
+    image: redis:latest
+    volumes:
+      - redis-data:/var/lib/redis
+    networks:
+      - app-intern
+    
 volumes:
   db-data:
   shared:
+  redis-data:
 
 
 networks:

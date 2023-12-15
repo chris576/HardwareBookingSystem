@@ -1,3 +1,6 @@
 .idea
 # React Component Preview
 previewConfig.json
+.vscode
+composer.json
+composer.lock

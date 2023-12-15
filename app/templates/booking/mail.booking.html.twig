@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+  <h1>Bestätigung für Ihre Buchug von {{ hardwareName }} im Zeitraum von {{ startDate.format('Y-m-d H:i') }} bis {{ endDate.format('Y-m-d H:i') }}</h1>
+  <ul>
+    <li>
+      <b>Username:</b> {{ username }}
+    </li>
+    <li>
+      <b>Password:</b> {{ password }}
+    </li>
+  </ul>
+{% endblock %}

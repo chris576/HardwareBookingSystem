@@ -5,6 +5,8 @@ namespace App\Controller;
 use App\Entity\Booking;
 use App\Repository\BookingRepository;
 use App\Repository\HardwareRepository;
+use App\Repository\UserRepository;
+use App\Service\MailServiceContainer;
 use DateTime;
 use DateTimeImmutable;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -18,12 +20,16 @@ class BookingController extends AbstractController
 {
     private BookingRepository $bookingRepository;
     private HardwareRepository $hardwareRepository;
+    private UserRepository $userRepository;
+    private MailServiceContainer $mailServiceContainer;
     private Security $security;
-    public function __construct(BookingRepository $bookingRepository, HardwareRepository $hardwareRepository, Security $security)
+    public function __construct(BookingRepository $bookingRepository, HardwareRepository $hardwareRepository, UserRepository $userRepository, Security $security, MailServiceContainer $mailServiceContainer)
     {
         $this->bookingRepository = $bookingRepository;
         $this->hardwareRepository = $hardwareRepository;
         $this->security = $security;
+        $this->userRepository = $userRepository;
+        $this->mailServiceContainer = $mailServiceContainer;
     }
 
     #[Route('/read', name: 'read', methods: 'GET')]
@@ -42,13 +48,13 @@ class BookingController extends AbstractController
             $hardwareId,
             $booking_length
         );
-        return $this->render('bookingPage/booking_page.html.twig', [
-            'hardwareList' => $this->hardwareRepository->findAll(),
+        return $this->render('booking/page.booking.html.twig', [
+            'hardwareList' => $this->hardwareRepository->findByUserIdentifier($this->security->getUser()->getUserIdentifier()),
             'isAdmin' => $this->isGranted('ROLE_ADMIN'),
             'bookables' => $bookables,
             'bookingLength' => $booking_length,
             'bookingDate' => $bookingDateTime,
-            'hardware' => $hardwareId
+            'selectedHardwareId' => $hardwareId
         ]);
     }
 
@@ -80,6 +86,11 @@ class BookingController extends AbstractController
             return $this->redirectToRoute('api_booking_read');
         }
 
+        if ($this->userRepository->isUserAllowedToBook($this->security->getUser()->getUserIdentifier(), $hardwareId)) {
+            $this->addFlash('error', 'Ihnen ist es nicht erlaubt, dieses Objekt zu buchen.');
+            return $this->redirectToRoute('api_booking_read');
+        }
+
         $newBooking = new Booking();
         $startDateTime = DateTime::createFromFormat('Y-m-d H:i:s', $startDateTime);
         $endDateTime = DateTime::createFromFormat('Y-m-d H:i:s', $endDateTime);
@@ -94,6 +105,21 @@ class BookingController extends AbstractController
         $newBooking->setUser($this->security->getUser());
         $newBooking->setHardware($hardware);
         $this->bookingRepository->persist($newBooking, true);
+
+        // @TODO: Send Password as well to the local server.
+        $this->mailServiceContainer->send(
+            $this->getUser()->getUserIdentifier(),
+            $this->getParameter('mail.sender.default'),
+            "Ihre Zugangsdaten",
+            'booking/mail.booking.html.twig',
+            [
+                'username' => $hardware->getVpnUserName(),
+                'password' => (string) random_bytes(30),
+                'hardwareName' => $newBooking->getHardware()->getName(),
+                'startDate' => $newBooking->getStartDate(),
+                'endDate' => $newBooking->getEndDate()
+            ]);
+
         $this->addFlash('success', 'Deine Buchung der Hardware "' . $hardware->getName() . '" war erfolgreich.');
 
         return $this->redirectToRoute('api_booking_read', [
@@ -110,6 +136,17 @@ class BookingController extends AbstractController
         if ($booking == null) {
             return new Response(Response::HTTP_NOT_FOUND);
         }
+        $this->mailServiceContainer->send(
+            $booking->getUser()->getEmail(),
+            $this->getParameter('mail.sender.default'),
+            'Stornierung Ihrer Buchung',
+            'booking/mail.cancel.html.twig',
+            [
+                'hardwareName' => $booking->getHardware()->getName(),
+                'startDate' => $booking->getStartDate(),
+                'endDate' => $booking->getEndDate()
+            ]
+        );
         $this->bookingRepository->remove($booking, true);
         return new Response(Response::HTTP_OK);
     }

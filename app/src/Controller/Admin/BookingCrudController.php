@@ -6,6 +6,7 @@ use App\Entity\Booking;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
+use EasyCorp\Bundle\EasyAdminBundle\Config\{Action, Actions, Crud};
 
 class BookingCrudController extends AbstractCrudController
 {
@@ -22,5 +23,14 @@ class BookingCrudController extends AbstractCrudController
             AssociationField::new('hardware'),
             AssociationField::new('user')
         ];
+    }
+
+    public function configureActions(Actions $actions): Actions
+    {
+        return $actions
+            ->remove(Crud::PAGE_INDEX, Action::NEW)
+            ->remove(Crud::PAGE_INDEX, Action::DELETE)
+            ->remove(Crud::PAGE_DETAIL, Action::EDIT)        
+        ;
     }
 }

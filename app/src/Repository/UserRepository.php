@@ -42,6 +42,19 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         }
     }
 
+    public function isUserAllowedToBook(string $email, int $hardwareId) : bool
+    {
+        $conn = $this->getEntityManager()->getConnection();
+        $sql = '
+            SELECT DISTINCT hardware.id FROM hardware
+                JOIN role_hardware ON hardware_id = hardware.id
+                JOIN role_user ON role_user.role_id = role_hardware.role_id
+                JOIN user ON user.id = role_user.user_id AND user.email = :email
+        ';
+        $resultSet = $conn->executeQuery($sql, ['email' => $email]);
+        return in_array($hardwareId, $resultSet->fetchAll());
+    }
+
     /**
      * Used to upgrade (rehash) the user's password automatically over time.
      */
@@ -56,7 +69,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->save($user, true);
     }
 
-//    /**
+    //    /**
 //     * @return User[] Returns an array of User objects
 //     */
 //    public function findByExampleField($value): array
@@ -71,7 +84,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
 //        ;
 //    }
 
-//    public function findOneBySomeField($value): ?User
+    //    public function findOneBySomeField($value): ?User
 //    {
 //        return $this->createQueryBuilder('u')
 //            ->andWhere('u.exampleField = :val')

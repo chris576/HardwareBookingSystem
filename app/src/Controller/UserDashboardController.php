@@ -28,7 +28,7 @@ class UserDashboardController extends AbstractController
             return new Response(Response::HTTP_NOT_FOUND);
         }
         $user = $this->userRepository->findOneBy(['email' => $this->security->getUser()->getUserIdentifier()]);
-        return $this->render('user_dashboard/index.html.twig', [
+        return $this->render('user/dashboard.html.twig', [
             'bookings' => $user->getBookings()
         ]);
     }
